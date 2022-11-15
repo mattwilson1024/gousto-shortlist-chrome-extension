@@ -2,42 +2,45 @@ const wait = (amount = 0) => new Promise(resolve => setTimeout(resolve, amount))
 
 function attachStylesToBody() {
   var styles = `
-    [data-shortlist="true"] div:first-child {
+    [data-testing="menuRecipeViewDetails"][data-testing="menuRecipeViewDetails"][data-shortlist] div:first-child {
       background-color: palegreen;
     }
 
-    .shortlist-only [data-testing="menuRecipeViewDetails"][data-shortlist="false"],
     .shortlist-only [data-testing="menuRecipeViewDetails"]:not([data-shortlist]) {
       display: none;
     }
 
+    .shortlist-only .shortlist-filter-button {
+      background-color: orange;
+      color: white;
+    }
+
     .shortlist-button {
       height: 2.5rem;
-      width: 2.5rem;
       border: 1px solid rgb(97, 92, 255);
       color: rgb(97, 92, 255);
       background-color: rgb(255, 255, 255);
       border-radius: 3px;
       -webkit-box-pack: center;
       justify-content: center;
-      padding-top: 0.375rem;
+      padding: 0 10px 0 10px;
       margin-right: 1rem;
     }
 
     .shortlist-filter-button {
       position: fixed;
-      top: 10px;
-      right: 10px;
+      bottom: 8px;
+      left: 20px;
       z-index: 9999;
-      height: 2.5rem;
-      width: 2.5rem;
+      height: 48px;
       border: 1px solid rgb(97, 92, 255);
-      color: rgb(97, 92, 255);
+      color: black;
       background-color: rgb(255, 255, 255);
       border-radius: 3px;
       -webkit-box-pack: center;
       justify-content: center;
-      padding-top: 0.375rem;
+      padding: 0 20px 0 20px;
+      font-weight: bold;
     }
   `;
   var stylesheet = document.createElement("style")
@@ -67,17 +70,20 @@ function addShortlistButtonsToAllRecipes() {
   const recipeBoxes = document.querySelectorAll(`[data-testing="menuRecipeViewDetails"]`);
   if (!recipeBoxes) { console.error(`"Gousto Shorlist: Can't add shortlist buttons because no recipe boxes were found`); return; }
   recipeBoxes.forEach(recipeBox => {
-    recipeBox.classList.add(`shortlistable`);
     const addRecipeButton = recipeBox.querySelector(`[aria-label="Add recipe"]`);
-
-    const shortlistButton = document.createElement(`button`);
+    const shortlistButton = document.createElement(`button`); 
     shortlistButton.classList.add(`shortlist-button`);
-    const shortlistButtonText = document.createElement(`span`);
-    shortlistButtonText.innerHTML = `X`;
-    shortlistButton.appendChild(shortlistButtonText);
+    shortlistButton.innerText = `👍`;
 
     shortlistButton.addEventListener(`click`, (event) => {
-      recipeBox.dataset.shortlist = !(recipeBox.dataset?.shortlist === `true` ?? false);
+      if (recipeBox.dataset?.shortlist === `true`) {
+        recipeBox.removeAttribute(`data-shortlist`);
+        shortlistButton.innerText = `👍`;
+      } else {
+        recipeBox.dataset.shortlist = `true`;
+        shortlistButton.innerText = `👎`;
+      }
+      updateShortlistCount();
       event.preventDefault();
       event.stopPropagation();
     });
@@ -89,14 +95,19 @@ function addShortlistButtonsToAllRecipes() {
 function addShortlistFilterButton() {
   const shortlistFilterButton = document.createElement(`button`);
   shortlistFilterButton.classList.add(`shortlist-filter-button`);
-  const shortlistFilterButtonText = document.createElement(`span`);
-  shortlistFilterButtonText.innerHTML = `!!`;
-  shortlistFilterButton.appendChild(shortlistFilterButtonText);
-  document.body.appendChild(shortlistFilterButton);
 
   shortlistFilterButton.addEventListener(`click`, (event) => {
     document.body.classList.toggle(`shortlist-only`);
   });
+
+  document.body.appendChild(shortlistFilterButton);
+}
+
+function updateShortlistCount() {
+  const shortlistFilterButton = document.querySelector(`.shortlist-filter-button`);
+  if (!shortlistFilterButton) { return; }
+  const count = document.querySelectorAll(`[data-shortlist]`).length;
+  shortlistFilterButton.innerHTML = `Shortlisted: ${count}`;
 }
 
 async function main() {
@@ -114,6 +125,7 @@ async function main() {
   addShortlistFilterButton();
   selectAllRecipesList();
   addShortlistButtonsToAllRecipes();
+  updateShortlistCount();
   console.log(`Gousto Shortlist: Ready`);
 }
 
