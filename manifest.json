@@ -15,7 +15,8 @@
         "scripts/content.js"
       ],
       "matches": [
-        "https://www.gousto.co.uk/menu/*"
+        "https://www.gousto.co.uk/menu/*",
+        "https://www.gousto.co.uk/menu*"
       ]
     }
   ]
