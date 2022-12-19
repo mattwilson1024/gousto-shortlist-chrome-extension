@@ -1,3 +1,4 @@
+const LOCAL_STORAGE_KEY = `shortlist`;
 const wait = (amount = 0) => new Promise(resolve => setTimeout(resolve, amount));
 
 function attachStylesToBody() {
@@ -26,22 +27,32 @@ function attachStylesToBody() {
       justify-content: center;
       padding: 0 10px 0 10px;
       margin-right: 1rem;
+      line-height: 1rem;
     }
 
-    .shortlist-filter-button {
+    .shortlist-toolbar {
       position: fixed;
       bottom: 8px;
       left: 20px;
       z-index: 9999;
+      display: flex;
+      gap: 10px;
+    }
+
+    .shortlist-toolbar button {
+      display: inline-flex;
+      align-items: center;
       height: 48px;
+      justify-content: center;
       border: 1px solid rgb(97, 92, 255);
       color: black;
       background-color: rgb(255, 255, 255);
       border-radius: 3px;
       -webkit-box-pack: center;
-      justify-content: center;
       padding: 0 20px 0 20px;
       font-weight: bold;
+      line-height: 1rem;
+      font-size: 0.9rem;
     }
   `;
   var stylesheet = document.createElement("style")
@@ -61,7 +72,7 @@ function hasRecipes() {
   return recipeBoxes?.length > 0;
 }
 
-function selectAllRecipesList() {
+function clickAllRecipesTab() {
   const allRecipesButton = document.querySelector(`[data-slug="all-recipes"]`);
   if (!allRecipesButton) { console.error(`"Gousto Shorlist: "All Recipes" button not found`); return; }
   allRecipesButton.click();
@@ -72,37 +83,70 @@ function addShortlistButtonsToAllRecipes() {
   if (!recipeBoxes) { console.error(`"Gousto Shorlist: Can't add shortlist buttons because no recipe boxes were found`); return; }
   recipeBoxes.forEach(recipeBox => {
     const addRecipeButton = recipeBox.querySelector(`[aria-label="Add recipe"]`);
-    const shortlistButton = document.createElement(`button`); 
+    const shortlistButton = addRecipeButton.insertAdjacentElement(`beforebegin`, document.createElement(`button`));
     shortlistButton.classList.add(`shortlist-button`);
     shortlistButton.innerText = `👍`;
 
     shortlistButton.addEventListener(`click`, (event) => {
-      if (recipeBox.dataset?.shortlist === `true`) {
-        recipeBox.removeAttribute(`data-shortlist`);
-        shortlistButton.innerText = `👍`;
-      } else {
-        recipeBox.dataset.shortlist = `true`;
-        shortlistButton.innerText = `👎`;
-      }
-      updateShortlistCount();
+      const isCurrentlyShortlisted = recipeBox.dataset?.shortlist === `true`;
+      updateShortlistStatus(recipeBox, !isCurrentlyShortlisted);
       event.preventDefault();
       event.stopPropagation();
     });
-
-    addRecipeButton.parentElement.insertBefore(shortlistButton, addRecipeButton);
   });
 }
 
-function addShortlistFilterButton() {
-  const shortlistFilterButton = document.createElement(`button`);
-  shortlistFilterButton.classList.add(`shortlist-filter-button`);
+function updateShortlistStatus(recipeBox, shouldBeShortlisted) {
+  const shortlistButton = recipeBox.querySelector(`.shortlist-button`);
+  if (shouldBeShortlisted) {
+    recipeBox.dataset.shortlist = `true`;
+    shortlistButton.innerText = `👎`;
+  } else {
+    recipeBox.removeAttribute(`data-shortlist`);
+    shortlistButton.innerText = `👍`;
+  }
+  updateShortlistCount();
+}
 
+function addToolbarButtons() {
+  const toolbar = document.body.appendChild(document.createElement(`div`));
+  toolbar.classList.add(`shortlist-toolbar`);
+
+  const shortlistFilterButton = toolbar.appendChild(document.createElement(`button`));
+  shortlistFilterButton.classList.add(`shortlist-filter-button`);
+  shortlistFilterButton.innerText = "Shortlisted: 0";
   shortlistFilterButton.addEventListener(`click`, (event) => {
     document.body.classList.toggle(`shortlist-only`);
   });
 
-  document.body.appendChild(shortlistFilterButton);
+  const saveButton = toolbar.appendChild(document.createElement(`button`));
+  saveButton.innerText = "Save";
+  saveButton.addEventListener(`click`, (event) => {
+    const shortlistedRecipeIds = getShortlistIdsFromDom();
+    localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(shortlistedRecipeIds));
+  });
+
+  const loadButton = toolbar.appendChild(document.createElement(`button`));
+  loadButton.innerText = "Load";
+  loadButton.addEventListener(`click`, (event) => {
+    const recalledRecipeIds = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEY) ?? `[]`);
+    setShortlistIdsInDom(recalledRecipeIds);
+  });
 }
+
+function getShortlistIdsFromDom() {
+  const shortlistedRecipeBoxes = document.querySelectorAll(`[data-testing="menuRecipeViewDetails"][data-shortlist]`);
+  return Array.from(shortlistedRecipeBoxes ?? []).map(recipeBox => recipeBox.getAttribute(`data-testing-id`));
+}
+
+function setShortlistIdsInDom(ids) {
+  const recipeBoxes = document.querySelectorAll(`[data-testing="menuRecipeViewDetails"]`);
+  recipeBoxes.forEach(recipeBox => {
+    const recipeId = recipeBox.getAttribute(`data-testing-id`);
+    updateShortlistStatus(recipeBox, ids.includes(recipeId));
+  });
+}
+
 
 function updateShortlistCount() {
   const shortlistFilterButton = document.querySelector(`.shortlist-filter-button`);
@@ -123,8 +167,8 @@ async function main() {
   }
   console.log(`Gousto Shortlist: Setting up and selecting "All Recipes" list`);
   attachStylesToBody();
-  addShortlistFilterButton();
-  selectAllRecipesList();
+  addToolbarButtons();
+  clickAllRecipesTab();
   addShortlistButtonsToAllRecipes();
   updateShortlistCount();
   console.log(`Gousto Shortlist: Ready`);

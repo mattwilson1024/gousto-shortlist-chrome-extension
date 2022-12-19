@@ -7,17 +7,19 @@ This extension adds the ability to create a temporary "shortlist" of recipes on 
 
 Every week there are ~75 new recipes to choose from from which you need to pick up to 5. The "Add recipe" button only lets you select up to that maximum of 5 recipes - when you reach that limit the button becomes disabled. This is not very convenient because it is hard to keep track of which recipes you like the look of, before whittling your choices down.
 
-This extension does two things:
+This extension adds additional functionality to the page:
 
 1. Adds a shortlist button (👍) to each recipe, next to the existing "Add recipe" button. Pressing this will add the recipe to your shortlist. It gets highlighted in green so that it stands out as you scroll up and down. Press it again to remove a shortlisted recipe from the shortlist. You can shortlist as many recipes as you like, not constrained by the maximum of 5.
 
 2. Adds the ability to filter the list to show only your shortlisted recipes. The extension adds a "Shortlisted" button in the bottom left. This shows the number of shortlisted recipes. Click the button to toggle the filter on and off. When the filter is applied, only shortlisted recipes will be visible. From there you can either remove recipes from the shortlist (to narrow down your choices) or add the recipes to your basket using the "Add recipe" button as normal.
 
+3. Adds the ability to save & load your shortlist choices. Pressing "Save" will store the current shortlist in local storoage. Pressing "Load" will retrieve it. Currently the storage only works for one menu at a time (i.e. it doesn't have separate storage per week / menu).
+
 ## How does it work?
 
-The extension runs automatically when visiting the menu (recipe selection) page on Gousto (any URL starting with https://www.gousto.co.uk/menu). It adds a new "shortlist" button to each recipe card on the page, and also adds a filter button in the bottom left.
+The extension runs automatically when visiting the menu (recipe selection) page on Gousto (any URL starting with https://www.gousto.co.uk/menu). It adds a new "shortlist" button to each recipe card on the page, and a toolbar with filter / save / load buttons in the bottom left.
 
-The shortlisting functionality is added directly to the page itself, using simple DOM manipulation. It runs locally within the page, no data is sent out of the page or stored, so refreshing the page will lose your choices. The extension is purely a convenience tool to make the page easier to use as you make your selections.
+The shortlisting functionality is added directly to the page itself, using simple DOM manipulation. It runs locally within the page, no data is sent to any third parties or servers. The "Save" and "Load" buttons use the browser's local storage, so this is private to you and is all stored on your own machine. The extension is purely a convenience tool to make the page easier to use as you make your selections.
 
 ## Installation
 
