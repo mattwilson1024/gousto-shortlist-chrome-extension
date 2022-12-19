@@ -6,7 +6,8 @@ function attachStylesToBody() {
       background-color: palegreen;
     }
 
-    .shortlist-only [data-testing="menuRecipeViewDetails"]:not([data-shortlist]) {
+    .shortlist-only [data-testing="menuRecipeViewDetails"]:not([data-shortlist]),
+    .shortlist-only [data-testing="menuRecipeOutOfStock"] {
       display: none;
     }
 
