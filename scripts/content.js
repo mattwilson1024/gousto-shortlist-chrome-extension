@@ -3,7 +3,7 @@ const wait = (amount = 0) => new Promise(resolve => setTimeout(resolve, amount))
 
 function attachStylesToBody() {
   var styles = `
-    [data-testing="menuRecipeViewDetails"][data-testing="menuRecipeViewDetails"][data-shortlist] div:first-child {
+    [data-testing="menuRecipeViewDetails"][data-testing="menuRecipeViewDetails"][data-shortlist] > div {
       background-color: palegreen;
     }
 
